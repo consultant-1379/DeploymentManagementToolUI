@@ -1,0 +1,6 @@
+{
+    "name": "Application",
+    "namespace": "application",
+    "script": "Application",
+    "hash": "application"
+}

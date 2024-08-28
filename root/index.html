@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Deployment Generator Tool</title>
+    <script type="text/javascript" src="node_modules/jscore/jscore.js"></script>
+    <script type="text/javascript" src="node_modules/jscore-d3/jscore-d3.js" charset="utf-8"></script>
+    <script type="text/javascript">
+        require({
+            baseUrl:'src'
+        }, ['domReady!', 'visualizer/Application'], function (doc, Application) {
+            var app = new Application({
+                container:'#Container',
+                baseUrl: '/DeploymentManagementService-war/dmtservice/model'
+            });
+            app.start();
+        });
+    </script>
+    <link type="text/css" rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <div class="e-applicationBar">
+    <div class="mainTitle">
+        <span >Deployment Management Tool</span>
+    </div>
+</div>
+    <div id="Container"></div>
+    <span class='labelHolder'></span>
+</body>
+</html>

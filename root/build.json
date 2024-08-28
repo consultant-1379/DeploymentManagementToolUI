@@ -1,0 +1,179 @@
+{
+    "properties": {
+        "buildDir": "target",
+        "sdkTools": "$(pathToSdk)/tools",
+        "jasmineRunner": "$(sdkTools)/jasmine/test-runner.js",
+        "jscoverage": {
+            "?os.platform=windows": "$(sdkTools)/jscoverage/jscoverage.exe",
+            "?os.platform=unix": "$(sdkTools)/jscoverage/jscoverage"
+        },
+        "phantomjs": {
+            "?os.platform=windows": "$(sdkTools)/phantomjs/bin/phantomjs.exe",
+            "?os.platform=unix": "$(sdkTools)/phantomjs/bin/phantomjs"
+        },
+        "rjs": "$(node) $(pathToSdk)/node_modules/requirejs/bin/r.js",
+        "node": {
+            "?os.platform=windows": "tools/nodejs/bin/node.exe",
+            "?os.platform=unix": "tools/nodejs/bin/node"
+        },
+        "npm": {
+            "?os.platform=windows": "npm.cmd",
+            "?os.platform=unix": "npm"
+        },
+        "namespace": "dmtUI",
+        "version": "1.0.1"
+    },
+    "defaultPhase": "package",
+    "phases": {
+        "clean": {
+            "delete": {
+                "target": "$(buildDir)"
+            }
+        },
+        "copy-test-dependencies": {
+            "depends": [
+                "clean"
+            ],
+            "copy": {
+                "from": "node_modules/jscore/*",
+                "to": "target/node_modules/jscore/"
+            }
+        },
+        "instrument-code": {
+            "depends": ["clean"],
+            "execute": {
+                "command": "\"$(jscoverage)\"",
+                "attributes": [
+                    "src",
+                    "$(buildDir)/src"
+                ]
+            }
+        },
+        "copy-test-files": {
+            "depends": [],
+            "copy": {
+                "from": ["test"],
+                "to": "$(buildDir)/"
+            }
+        },
+        "test": {
+            "depends": [],
+            "copy": {
+                "from": "$(sdkTools)/*",
+                "to": "$(buildDir)/test/$(namespace)/_tools/"
+            }
+        },
+        "install-jscore": {
+            "execute": {
+                "command": "$(npm)",
+                "attributes": [
+                    "--registry",
+                    "http://150.132.76.214:5900/registry/_design/app/_rewrite/",
+                    "--force",
+                    "install",
+                    "jscore@0.1.8"
+                ]
+            }
+        },
+        "optimize": {
+            "rjs": {
+                "config": {
+                    "baseUrl": "src",
+                    "dir": "$(buildDir)/temp",
+                    "optimize": "none",
+                    "resources": "$(namespace)/resources",
+                    "paths": {
+                        "Titan": "empty:",
+                        "$": "empty:",
+						"_": "empty:",
+                        "template": "../node_modules/jscore/lib/requirejs/template",
+                        "styles": "../node_modules/jscore/lib/requirejs/styles",
+                        "text": "../node_modules/jscore/lib/requirejs/text-2.0.1"
+
+                    },
+                    "stubModules": [
+                        "template",
+                        "styles",
+                        "text"
+                    ],
+                    "modules": [
+                        {
+                            "name": "visualizer/Application"
+                        }
+                    ]
+                }
+            }
+        },
+        "cleanup-after-optimize": {
+            "delete": {
+                "target": [
+                    "$(buildDir)/temp/build.txt",
+                    "$(buildDir)/temp/styles.js",
+                    "$(buildDir)/temp/template.js",
+                    "$(buildDir)/temp/index.html"
+                ]
+            }
+        },
+        "copy-help":{
+            "copy": {
+                "from": [
+
+                    "help"
+                ],
+                "to": "$(buildDir)/"
+            }
+        },
+        "prepare-package": {
+            "depends": ["test", "optimize", "cleanup-after-optimize"],
+            "copy": {
+                "from": [
+                    "config/app.json",
+                    "$(buildDir)/temp/visualizer/Application.js",
+                    "resources",
+                    "resources/index.html",
+                    "package.json"
+                ],
+                "to": "$(buildDir)/package/"
+            },
+            "delete": {
+                "target": "$(buildDir)/package/resources/visualizer/index.html"
+            },
+            "mergeJson": {
+                "file": "$(buildDir)/package/package.json",
+                "json": {
+                    "version": "$(version)"
+                }
+            }
+        },
+        "package": {
+            "depends": ["prepare-package"],
+            "execute": {
+                "command": "$(npm)",
+                "attributes": [
+                    "pack",
+                    "$(buildDir)/package"
+                ]
+            },
+            "copy": {
+                "from": "$(namespace)-$(version).tgz",
+                "to": "$(buildDir)/"
+            },
+            "delete": {
+                "target": "$(namespace)-$(version).tgz"
+            }
+        },
+        "publish-package": {
+            "depends": ["package"],
+            "execute": {
+                "command": "$(npm)",
+                "attributes": [
+                    "--registry",
+                    "http://150.132.76.214:5900/registry/_design/app/_rewrite/",
+                    "--force",
+                    "publish",
+                    "$(buildDir)/$(namespace)-$(version).tgz"
+                ]
+            }
+        }
+    }
+}

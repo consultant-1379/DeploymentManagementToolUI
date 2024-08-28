@@ -1,0 +1,27 @@
+<html>
+<head>
+    <title>Test Cases</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="../node_modules/titan/lib/jasmine/jasmine-1.2.0/jasmine.css">
+    <script src="../node_modules/titan/lib/jasmine/jasmine-1.2.0/jasmine.js"></script>
+    <script src="../node_modules/titan/lib/jasmine/jasmine-1.2.0/jasmine-html.js"></script>
+    <script src="../node_modules/titan/lib/jasmine/console-reporter.js"></script>
+    <script src="../node_modules/titan/js/titan.js"></script>
+</head>
+<body>
+<script>
+    require({
+        baseUrl: '../src',
+        paths: {
+            test: '../test'
+        }
+    }, [
+        'test/application/Application'
+    ], function () {
+        jasmine.getEnv().addReporter(new jasmine.HtmlReporter());
+        jasmine.getEnv().addReporter(new jasmine.ConsoleReporter());
+        jasmine.getEnv().execute();
+    });
+</script>
+</body>
+</html>

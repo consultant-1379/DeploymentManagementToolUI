@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>DeploymentManagementToolUI</artifactId>
+		<groupId>com.ericsson.nms.litp</groupId>
+		<version>1.1.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>ERICdmtUI_CXP9030302</artifactId>
+	<packaging>${rpm.packaging}</packaging>
+       
+         <name>[${project.parent.artifactId}] CXP module</name>
+
+    <properties>
+		<com.ericsson.oss.rpm.architecture>noarch</com.ericsson.oss.rpm.architecture>
+		<!-- Install path = /${rpm-root}/${comp-name}/${install-path} -->
+		<rpm-root>opt</rpm-root>
+		<comp-name>ericsson</comp-name>
+		<install-path>${project.groupId}</install-path>
+	</properties>
+	
+	<build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.5</version>
+                <executions>
+                    <execution>
+                        <id>unpack_tools</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.ericsson.nms.litp</groupId>
+                                    <artifactId>dmtUI</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>tgz</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>rpm-maven-plugin</artifactId>
+                <configuration>
+                    <group>Applications/System</group>
+                    <mappings combine.self="override">
+                        <mapping>
+                            <directory>/${rpm-root}/${comp-name}</directory>
+                            <filemode>775</filemode>
+                            <username>root</username>
+                            <groupname>root</groupname>
+                        </mapping>
+                        <mapping>
+                            <directory>/${rpm-root}/${comp-name}/${install-path}</directory>
+                            <filemode>775</filemode>
+                            <username>root</username>
+                            <groupname>root</groupname>
+                        </mapping>
+                        <mapping>
+                            <directory>/${rpm-root}/${comp-name}/${install-path}/html</directory>
+                            <sources>
+                                <source>
+                                    <location>target/dependencies/package</location>
+                                </source>
+                            </sources>
+                        </mapping>
+                       <!--  <mapping>
+                            <directory>/etc/httpd/conf.d/apps</directory>
+                            <filemode>644</filemode>
+                            <directoryIncluded>false</directoryIncluded>
+                            <sources>
+                                <source>
+                                    <location>src/main/conf/httpd</location>
+                                </source>
+                            </sources>
+                        </mapping> -->
+                    </mappings>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+	
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dmtUI</artifactId>
+            <version>${project.version}</version>
+            <type>tgz</type>
+        </dependency>
+    </dependencies>
+</project>

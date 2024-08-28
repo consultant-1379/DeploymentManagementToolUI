@@ -1,0 +1,87 @@
+<project name="Application" default="build">
+
+    <condition property="path.os" value="config/build.windows.properties">
+        <os family="windows"/>
+    </condition>
+    <condition property="path.os" value="config/build.linux.properties">
+        <os family="unix"/>
+    </condition>
+    <property file="${path.os}"/>
+    <property file="config/app.properties"/>
+
+    <target name="clean">
+        <delete dir="${app.dir.build}"/>
+    </target>
+
+    <target name="install-dependencies" depends="clean">
+        <copy file="config/package.json" todir="/">
+            <filterset>
+                <filter token="VERSION" value="${app.version}"/>
+            </filterset>
+        </copy>
+        <exec executable="${build.npm}" failonerror="true">
+            <arg value="--registry"/>
+            <arg value="http://150.132.76.214:5900/registry/_design/app/_rewrite/"/>
+            <arg value="install"/>
+        </exec>
+        <delete file="package.json"/>
+    </target>
+
+    <target name="compile" depends="install-dependencies">
+        <exec executable="${build.node}" failonerror="true">
+            <arg value="${app.titan.modules}/requirejs/bin/r.js"/>
+            <arg value="-o"/>
+            <arg value="config/app.build.js"/>
+        </exec>
+        <copy todir="${app.dir.package}">
+            <fileset dir="${app.dir.temp}" includes="${app.script}"/>
+        </copy>
+        <copy file="config/package.json" todir="${app.dir.package}">
+            <filterset>
+                <filter token="VERSION" value="${app.version}"/>
+            </filterset>
+        </copy>
+        <copy todir="${app.dir.package}">
+            <fileset dir="resources"/>
+            <fileset file="config/app.json"/>
+        </copy>
+    </target>
+
+    <target name="test" depends="compile">
+        <mkdir dir="${app.dir.unit}"/>
+        <exec executable="${build.jscoverage}" failonerror="true">
+            <arg line="src"/>
+            <arg line="${app.dir.unit}/src"/>
+        </exec>
+        <copy todir="${app.dir.unit}">
+            <fileset dir="/">
+                <include name="test/"/>
+                <include name="${app.titan.lib}/"/>
+                <include name="${app.titan.ext}/"/>
+                <include name="${app.titan.js}/"/>
+            </fileset>
+        </copy>
+        <exec executable="${build.phantomjs}" failonerror="true">
+            <arg line="${app.titan.lib}/jasmine/test-runner.js"/>
+            <arg line="--dir"/>
+            <arg line="${app.dir.reports}"/>
+            <arg line="--test"/>
+            <arg line="${app.dir.unit}/test/index.html"/>
+        </exec>
+    </target>
+
+    <target name="build" depends="test">
+        <echo message="Build complete."/>
+    </target>
+
+    <target name="publish" depends="build">
+        <exec executable="${build.npm}" failonerror="true">
+            <arg value="--registry"/>
+            <arg value="http://150.132.76.214:5900/registry/_design/app/_rewrite/"/>
+            <arg value="--force"/>
+            <arg value="publish"/>
+            <arg value="${app.dir.package}"/>
+        </exec>
+    </target>
+
+</project>

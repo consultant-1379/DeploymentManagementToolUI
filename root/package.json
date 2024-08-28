@@ -1,0 +1,11 @@
+{
+    "name": "dmtUI",
+    "version": "0.0.1",
+    "devDependencies": {
+        "uisdk": "https://arm1s11-eiffel004.eiffel.gic.ericsson.se:8443/nexus/service/local/artifact/maven/content?g=com.ericsson.oss.pres&a=uisdk&v=0.0.19&r=prototype&e=tgz",
+        "jscore": "https://arm1s11-eiffel004.eiffel.gic.ericsson.se:8443/nexus/service/local/artifact/maven/content?g=com.ericsson.oss.pres&a=jscore-root&v=0.1.9&r=releases&e=tgz"
+    }
+}
+
+
+
